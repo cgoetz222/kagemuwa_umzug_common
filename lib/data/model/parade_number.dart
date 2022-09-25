@@ -72,6 +72,18 @@ class ParadeNumber implements Comparable<ParadeNumber> {
     return number.toString();
   }
 
+  String getParadeTypeDescription() {
+    switch(type) {
+      case "W": return "Wagen";
+      case "G": return "Großgruppe";
+      case "K": return "Kleingruppe";
+      case "R": return "Reserve";
+      case "M": return "Musikverein";
+      case "KG": return "KaGeMuWa";
+      default: return "";
+    }
+  }
+
   @override
   int compareTo(ParadeNumber other) {
     return number.compareTo(other.number);

@@ -29,6 +29,12 @@ class KAGEMUWAStyles {
       fontWeight: FontWeight.bold
   );
 
+  static const TextStyle ratingItemTextStyle = TextStyle(
+      fontSize: 14.0,
+      color: KAGEMUWAColors.ratingItemTextColor,
+      fontWeight: FontWeight.bold
+  );
+
   // menu card
   static const TextStyle menuCardStyle = TextStyle(
       fontSize: 22.0,
@@ -37,20 +43,52 @@ class KAGEMUWAStyles {
       fontWeight: FontWeight.bold
   );
 
-  // cards
-  static const TextStyle cardHeaderStyle = TextStyle(
+  // cards dark
+  static const TextStyle cardDarkHeaderStyle = TextStyle(
       fontSize: 18.0,
-      color: KAGEMUWAColors.cardHeaderText,
+      color: KAGEMUWAColors.cardDarkHeaderText,
       fontWeight: FontWeight.bold
   );
-  static const TextStyle cardBodyStyle = TextStyle(
+  static const TextStyle cardDarkBodyStyle = TextStyle(
       fontSize: 14.0,
-      color:   KAGEMUWAColors.cardBodyText,
+      color:   KAGEMUWAColors.cardDarkBodyText,
       fontWeight: FontWeight.normal
   );
-  static const TextStyle cardTextFieldStyle = TextStyle(
+  static const TextStyle cardDarkTextFieldStyle = TextStyle(
       fontSize: 14.0,
-      color:   KAGEMUWAColors.cardTextFieldColor,
+      color:   KAGEMUWAColors.cardDarkTextFieldColor,
       fontWeight: FontWeight.normal
+  );
+
+  // cards bright
+  static const TextStyle cardBrightHeaderStyle = TextStyle(
+      fontSize: 18.0,
+      color: KAGEMUWAColors.cardBrightHeaderText,
+      fontWeight: FontWeight.bold
+  );
+  static const TextStyle cardBrightSubHeaderStyle = TextStyle(
+      fontSize: 18.0,
+      color: KAGEMUWAColors.cardBrightSubHeaderText,
+      fontWeight: FontWeight.bold
+  );
+  static const TextStyle cardBrightBodyStyle = TextStyle(
+      fontSize: 14.0,
+      color:   KAGEMUWAColors.cardBrightBodyText,
+      fontWeight: FontWeight.normal
+  );
+
+  // start screen
+  static const TextStyle startPageTextFieldStyle = TextStyle(
+      fontFamily: 'cursive',
+      fontSize: 36.0,
+      color: KAGEMUWAColors.startTextFieldColor,
+      fontWeight: FontWeight.bold,
+  );
+
+  // rating screen
+  static const TextStyle ratingHeaderStyle = TextStyle(
+      fontSize: 18.0,
+      color: KAGEMUWAColors.ratingHeaderTextColor,
+      fontWeight: FontWeight.bold
   );
 }
