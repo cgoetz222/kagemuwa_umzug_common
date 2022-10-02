@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kagemuwa_umzug_common/data/model/parade_number.dart';
 import 'package:kagemuwa_umzug_common/data/model/campaign.dart';
+import 'package:kagemuwa_umzug_common/data/model/settings.dart' as kgmw;
+import '../model/rater.dart';
 import 'repository_interface.dart';
 
 class FirebaseRepository implements RepositoryInterface {
@@ -10,8 +12,9 @@ class FirebaseRepository implements RepositoryInterface {
 
   static String CAMPAIGNS = "campaigns";
   static String CAMPAIGN = "campaign_";
+  static String SETTINGS = "settings";
   static String PARADE_NUMBER = "_parade_numbers";
-  static String RATER = "_raters";
+  static String RATER = "raters";
 
   /// ADD
   @override
@@ -38,6 +41,7 @@ class FirebaseRepository implements RepositoryInterface {
     return newID;
   }
 
+  @override
   Future<bool> addParadeNumbers(String campaignYear, List<ParadeNumber> paradeNumbers) async {
     CollectionReference paradeNumberCollection;
 
@@ -47,9 +51,19 @@ class FirebaseRepository implements RepositoryInterface {
       await paradeNumberCollection.add(paradeNumber.toJson()).then((value) => paradeNumber.id = value.id);
     }
 
-//    await paradeNumberCollection.add(paradeNumbers.map((e) => e.toJson())).then((value) => () {return true;}).catchError(() {return false;});// .toJson()).then((value) => newID = value.id);
-
     return true;
+  }
+
+  @override
+  Future<String> addRater(Rater rater) async {
+    String newID = "";
+    CollectionReference raterCollection;
+
+    raterCollection = FirebaseFirestore.instance.collection(RATER);
+
+    await raterCollection.add(rater.toJson()).then((value) => rater.id = value.id);
+
+    return newID;
   }
 
   /// DELETE
@@ -91,6 +105,36 @@ class FirebaseRepository implements RepositoryInterface {
   }
 
   @override
+  Future<Rater> getRater(String id) async {
+    Rater rater;
+    CollectionReference raterCollection;
+
+    raterCollection = FirebaseFirestore.instance.collection(RATER);
+
+    DocumentSnapshot docSnapshot;
+    docSnapshot = await raterCollection.doc(id).get();
+    if(docSnapshot.data() != null) {
+      rater = Rater.fromJson(docSnapshot.id, docSnapshot.data() as Map<String, dynamic>);
+    } else {
+      rater = Rater("NEW", "", false, "", "", Rater.STATUS_NOT_REGISTERED, 0);
+    }
+
+    return rater;
+  }
+
+  @override
+  Future<kgmw.Settings> getSettings() async {
+    CollectionReference settingsCollection;
+
+    settingsCollection = FirebaseFirestore.instance.collection(SETTINGS);
+
+    QuerySnapshot querySnapshot;
+    querySnapshot = await settingsCollection.get();
+    kgmw.Settings settings = kgmw.Settings.fromJson(querySnapshot.docs.first.id, querySnapshot.docs.first.data() as Map<String, dynamic>);
+    return settings;
+  }
+
+  @override
   Future<List<ParadeNumber>> getParadeNumbers(String campaignYear) async {
     List<ParadeNumber> paradeNumbers = [];
 
@@ -118,6 +162,26 @@ class FirebaseRepository implements RepositoryInterface {
     campaignCollection.doc(campaign.id).update(campaign.toJson());
 
     return;
+  }
+
+  @override
+  Future<void> updateRater(Rater rater) async {
+    CollectionReference raterCollection;
+
+    raterCollection = FirebaseFirestore.instance.collection(RATER);
+
+    raterCollection.doc(rater.id).update(rater.toJson());
+
+    return;
+  }
+
+  @override
+  Future<void> updateSettings(kgmw.Settings settings) async {
+    CollectionReference settingsCollection;
+
+    settingsCollection = FirebaseFirestore.instance.collection(SETTINGS);
+
+    settingsCollection.doc(settings.id).update(settings.toJson());
   }
 
   @override

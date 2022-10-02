@@ -1,21 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:kagemuwa_umzug_common/data/model/campaign.dart';
 import 'package:kagemuwa_umzug_common/data/model/parade_number.dart';
+import 'package:kagemuwa_umzug_common/data/model/settings.dart';
 
 import '../repository/firebase_repository.dart';
 
 class ParadeProvider with ChangeNotifier {
+  bool initialized = false;
   List<Campaign>? campaigns;
   List<ParadeNumber>? paradeNumbers;
   List<String> campaignYears = [];
   Campaign selectedCampaign = Campaign('', '', false, false);
+  Settings settings = Settings("", Settings.WEIGHT_HUMOR, Settings.WEIGHT_OPTIC_ORIGINALITY, Settings.WEIGHT_DISTANCE_VOLUME);
   bool paradeNumbersSavedToDB = false;
 
   ParadeProvider() {
     campaigns = [];
     paradeNumbers = [];
+  }
 
-    _loadCampaigns().then((value) => _loadParadeNumbers());
+  Future<bool> load() async {
+    if(initialized) return true;
+
+    campaigns = [];
+    paradeNumbers = [];
+
+    await _loadSettings();
+    await _loadCampaigns();
+    await _loadParadeNumbers();
+
+    initialized = true;
+
+    return true;
   }
 
   void addCampaign(String newCampaignYear) {
@@ -110,7 +126,8 @@ class ParadeProvider with ChangeNotifier {
         if(campaign.selected) selectedCampaign = campaign;
       }
     }
-    notifyListeners();
+
+    if(initialized) notifyListeners();
   }
 
   /// loads the parade numbers for the current campaign from the firebase database
@@ -125,8 +142,12 @@ class ParadeProvider with ChangeNotifier {
         paradeNumbersSavedToDB = true;
       }
     }
+    if(initialized) notifyListeners();
+  }
 
-    notifyListeners();
+  Future<void> _loadSettings() async {
+    settings = await FirebaseRepository().getSettings();
+    if(initialized) notifyListeners();
   }
 
   void paradeMoveUp(int paradeNumber) async {
@@ -155,6 +176,10 @@ class ParadeProvider with ChangeNotifier {
 
       notifyListeners();
     }
+  }
+
+  void updateSettings() {
+    FirebaseRepository().updateSettings(settings);
   }
 
   void setSelectedCampaign(String year) {
