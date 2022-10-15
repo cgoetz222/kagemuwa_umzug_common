@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kagemuwa_umzug_common/data/model/campaign.dart';
 import 'package:kagemuwa_umzug_common/data/model/parade_number.dart';
-import 'package:kagemuwa_umzug_common/data/model/settings.dart';
+import 'package:kagemuwa_umzug_common/data/model/settings.dart' as kgmw;
 
 import '../repository/firebase_repository.dart';
 
@@ -11,7 +12,7 @@ class ParadeProvider with ChangeNotifier {
   List<ParadeNumber>? paradeNumbers;
   List<String> campaignYears = [];
   Campaign selectedCampaign = Campaign('', '', false, false);
-  Settings settings = Settings("", Settings.WEIGHT_HUMOR, Settings.WEIGHT_OPTIC_ORIGINALITY, Settings.WEIGHT_DISTANCE_VOLUME);
+  kgmw.Settings settings = kgmw.Settings("", kgmw.Settings.WEIGHT_HUMOR, kgmw.Settings.WEIGHT_OPTIC_ORIGINALITY, kgmw.Settings.WEIGHT_DISTANCE_VOLUME);
   bool paradeNumbersSavedToDB = false;
 
   ParadeProvider() {
@@ -29,9 +30,26 @@ class ParadeProvider with ChangeNotifier {
     await _loadCampaigns();
     await _loadParadeNumbers();
 
+    listenForParadeNumberChanges();
+
     initialized = true;
 
     return true;
+  }
+
+  Future<void> listenForParadeNumberChanges() async {
+    CollectionReference reference = FirebaseFirestore.instance.collection(FirebaseRepository.CAMPAIGN + selectedCampaign.year + FirebaseRepository.PARADE_NUMBER);
+    reference.snapshots().listen((querySnapshot) {
+      for (var change in querySnapshot.docChanges) {
+        ParadeNumber paradeNumber = ParadeNumber.fromJson(change.doc.id, change.doc.data() as Map<String, dynamic>);
+        paradeNumbers!.elementAt(paradeNumber.number - 1).name = paradeNumber.name;
+        paradeNumbers!.elementAt(paradeNumber.number - 1).club = paradeNumber.club;
+        paradeNumbers!.elementAt(paradeNumber.number - 1).type = paradeNumber.type;
+        paradeNumbers!.elementAt(paradeNumber.number - 1).evaluate = paradeNumber.evaluate;
+
+        notifyListeners();
+      }
+    });
   }
 
   void addCampaign(String newCampaignYear) {

@@ -145,7 +145,7 @@ class FirebaseRepository implements RepositoryInterface {
     if(docSnapshot.data() != null) {
       rater = Rater.fromJson(docSnapshot.id, docSnapshot.data() as Map<String, dynamic>);
     } else {
-      rater = Rater("NEW", "", false, "", "", "", Rater.STATUS_NOT_REGISTERED, 0);
+      rater = Rater("NEW", "", false, "", "", "", Rater.STATUS_NOT_REGISTERED, 0, Rater.RATING_METHOD_PICKER);
     }
 
     return rater;
@@ -227,9 +227,6 @@ class FirebaseRepository implements RepositoryInterface {
     CollectionReference raterCollection;
 
     raterCollection = FirebaseFirestore.instance.collection(CAMPAIGN + rater.ratingCampaign + RATINGS);
-print(rater.ratingID);
-print(rating.id);
-print(rating.ratingOpticOriginality);
     raterCollection.doc(rater.ratingID).collection(RATER_RATINGS).doc(rating.id).update(rating.toJson());
 
     return;
@@ -256,4 +253,6 @@ print(rating.ratingOpticOriginality);
         //.then((_) => print('Updated'))
         //.catchError((error) => print('Update failed: $error'));
   }
+
+  /// listeners for realtime changes
 }

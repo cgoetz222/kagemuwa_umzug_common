@@ -10,6 +10,9 @@ class Rater {
   static const int STATUS_ERROR_OTHER_DEVICE_ID = 98;
   static const int STATUS_ERROR = 99;
 
+  static const int RATING_METHOD_PICKER = 1;
+  static const int RATING_METHOD_SLIDER = 2;
+
   String id;
   String deviceID;
   bool login;
@@ -18,8 +21,9 @@ class Rater {
   String ratingID; // collection ID in firebase for the current campaign for the current rater
   int status;
   int currentParadeNumber;
+  int ratingMethod;
 
-  Rater(this.id, this.deviceID, this.login, this.name, this.ratingCampaign, this.ratingID, this.status, this.currentParadeNumber);
+  Rater(this.id, this.deviceID, this.login, this.name, this.ratingCampaign, this.ratingID, this.status, this.currentParadeNumber, this.ratingMethod);
 
   factory Rater.fromJson(String id, Map<String, dynamic> jsonMap) {
     final String deviceID;
@@ -29,6 +33,7 @@ class Rater {
     final String ratingID;
     final int status;
     int currentParadeNumber;
+    int ratingMethod;
 
     if(jsonMap['deviceID'] != null) {
       deviceID = jsonMap['deviceID'] as String;
@@ -65,6 +70,11 @@ class Rater {
     } else {
       currentParadeNumber = 1;
     }
+    if(jsonMap['ratingMethod'] != null) {
+      ratingMethod = jsonMap['ratingMethod'] as int;
+    } else {
+      ratingMethod = 1;
+    }
 
     return Rater(
       id,
@@ -75,6 +85,7 @@ class Rater {
       ratingID,
       status,
       currentParadeNumber,
+      ratingMethod,
     );
   }
 
@@ -86,6 +97,7 @@ class Rater {
     'ratingID': ratingID,
     'status': status,
     'currentParadeNumber': currentParadeNumber,
+    'ratingMethod': ratingMethod,
   };
 
   void setID(String id) {
