@@ -2,17 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kagemuwa_umzug_common/data/model/campaign.dart';
 import 'package:kagemuwa_umzug_common/data/model/parade_number.dart';
-import 'package:kagemuwa_umzug_common/data/model/settings.dart' as kgmw;
 
 import '../repository/firebase_repository.dart';
 
-class ParadeProvider with ChangeNotifier {
+class ParadeProvider extends ChangeNotifier {
   bool initialized = false;
   List<Campaign>? campaigns;
   List<ParadeNumber>? paradeNumbers;
   List<String> campaignYears = [];
-  Campaign selectedCampaign = Campaign('', '', false, false);
-  kgmw.Settings settings = kgmw.Settings("", kgmw.Settings.WEIGHT_HUMOR, kgmw.Settings.WEIGHT_OPTIC_ORIGINALITY, kgmw.Settings.WEIGHT_DISTANCE_VOLUME);
+  Campaign selectedCampaign = Campaign('', '', false, false, Campaign.NUMBER_OF_RATERS, Campaign.WEIGHT_HUMOR, Campaign.WEIGHT_OPTIC_ORIGINALITY, Campaign.WEIGHT_DISTANCE_VOLUME);
   bool paradeNumbersSavedToDB = false;
 
   ParadeProvider() {
@@ -26,7 +24,6 @@ class ParadeProvider with ChangeNotifier {
     campaigns = [];
     paradeNumbers = [];
 
-    await _loadSettings();
     await _loadCampaigns();
     await _loadParadeNumbers();
 
@@ -53,7 +50,7 @@ class ParadeProvider with ChangeNotifier {
   }
 
   void addCampaign(String newCampaignYear) {
-    Campaign newCampaign = Campaign('', newCampaignYear, true, true);
+    Campaign newCampaign = Campaign('', newCampaignYear, true, true, Campaign.NUMBER_OF_RATERS, Campaign.WEIGHT_HUMOR, Campaign.WEIGHT_OPTIC_ORIGINALITY, Campaign.WEIGHT_DISTANCE_VOLUME);
 
     FirebaseRepository().addCampaign(newCampaign).then((value) => () {
       newCampaign.setID(value);
@@ -129,7 +126,7 @@ class ParadeProvider with ChangeNotifier {
     // reset the data
     campaigns = [];
     campaignYears = [];
-    selectedCampaign = Campaign('', '', false, false);
+    selectedCampaign = Campaign('', '', false, false, Campaign.NUMBER_OF_RATERS, Campaign.WEIGHT_HUMOR, Campaign.WEIGHT_OPTIC_ORIGINALITY, Campaign.WEIGHT_DISTANCE_VOLUME);
 
     campaigns = await FirebaseRepository().getCampaigns();
     if(campaigns!.isNotEmpty) {
@@ -163,11 +160,6 @@ class ParadeProvider with ChangeNotifier {
     if(initialized) notifyListeners();
   }
 
-  Future<void> _loadSettings() async {
-    settings = await FirebaseRepository().getSettings();
-    if(initialized) notifyListeners();
-  }
-
   void paradeMoveUp(int paradeNumber) async {
     if(paradeNumber > 1) {
       paradeNumbers!.elementAt(paradeNumber - 2).number += 1;
@@ -194,10 +186,6 @@ class ParadeProvider with ChangeNotifier {
 
       notifyListeners();
     }
-  }
-
-  void updateSettings() {
-    FirebaseRepository().updateSettings(settings);
   }
 
   void setSelectedCampaign(String year) {
@@ -239,6 +227,12 @@ class ParadeProvider with ChangeNotifier {
 
   void updateParadeNumber(ParadeNumber paradeNumber) async {
     await FirebaseRepository().updateParadeNumber(selectedCampaign.year, paradeNumber);
+
+    notifyListeners();
+  }
+
+  void updateCurrentCampaign() async {
+    await FirebaseRepository().updateCampaign(selectedCampaign);
 
     notifyListeners();
   }

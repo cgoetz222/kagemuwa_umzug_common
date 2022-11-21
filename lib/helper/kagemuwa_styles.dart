@@ -73,7 +73,7 @@ class KAGEMUWAStyles {
   );
   static const TextStyle cardBrightBodyStyle = TextStyle(
       fontSize: 14.0,
-      color:   KAGEMUWAColors.cardBrightBodyText,
+      color: KAGEMUWAColors.cardBrightBodyText,
       fontWeight: FontWeight.normal
   );
 
@@ -83,6 +83,15 @@ class KAGEMUWAStyles {
       fontSize: 36.0,
       color: KAGEMUWAColors.startTextFieldColor,
       fontWeight: FontWeight.bold,
+  );
+
+  // thank you screen
+  static const TextStyle thankYouPageTextFieldStyle = TextStyle(
+    fontFamily: 'cursive',
+    fontSize: 24.0,
+    color: KAGEMUWAColors.cardBrightBodyText,
+    fontWeight: FontWeight.bold,
+
   );
 
   // rating screen

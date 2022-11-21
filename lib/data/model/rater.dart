@@ -14,6 +14,7 @@ class Rater {
   static const int RATING_METHOD_SLIDER = 2;
 
   String id;
+  String raterNumber;
   String deviceID;
   bool login;
   String name;
@@ -23,9 +24,10 @@ class Rater {
   int currentParadeNumber;
   int ratingMethod;
 
-  Rater(this.id, this.deviceID, this.login, this.name, this.ratingCampaign, this.ratingID, this.status, this.currentParadeNumber, this.ratingMethod);
+  Rater(this.id, this.raterNumber, this.deviceID, this.login, this.name, this.ratingCampaign, this.ratingID, this.status, this.currentParadeNumber, this.ratingMethod);
 
   factory Rater.fromJson(String id, Map<String, dynamic> jsonMap) {
+    final String raterNumber;
     final String deviceID;
     final bool login;
     final String name;
@@ -35,6 +37,11 @@ class Rater {
     int currentParadeNumber;
     int ratingMethod;
 
+    if(jsonMap['raterNumber'] != null) {
+      raterNumber = jsonMap['raterNumber'] as String;
+    } else {
+      raterNumber = '';
+    }
     if(jsonMap['deviceID'] != null) {
       deviceID = jsonMap['deviceID'] as String;
     } else {
@@ -78,6 +85,7 @@ class Rater {
 
     return Rater(
       id,
+      raterNumber,
       deviceID,
       login,
       name,
@@ -90,6 +98,7 @@ class Rater {
   }
 
   Map<String, dynamic> toJson() => {
+    'raterNumber': raterNumber,
     'deviceID' : deviceID,
     'login': login,
     'name': name,
@@ -99,8 +108,8 @@ class Rater {
     'currentParadeNumber': currentParadeNumber,
     'ratingMethod': ratingMethod,
   };
-
+/*
   void setID(String id) {
     this.id = id;
-  }
+  }*/
 }

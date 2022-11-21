@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kagemuwa_umzug_common/data/model/parade_number.dart';
 import 'package:kagemuwa_umzug_common/data/model/campaign.dart';
-import 'package:kagemuwa_umzug_common/data/model/settings.dart' as kgmw;
 import '../model/rater.dart';
 import '../model/rating.dart';
 import 'repository_interface.dart';
@@ -15,7 +14,7 @@ class FirebaseRepository implements RepositoryInterface {
   static String CAMPAIGN = "campaign_";
   static String SETTINGS = "settings";
   static String PARADE_NUMBER = "_parade_numbers";
-  static String RATER = "raters";
+  static String RATER = "_raters";
   static String RATINGS = "_ratings";
   static String RATER_RATINGS = "ratings";
 
@@ -62,38 +61,28 @@ class FirebaseRepository implements RepositoryInterface {
     String newID = "";
     CollectionReference raterCollection;
 
-    raterCollection = FirebaseFirestore.instance.collection(RATER);
+    raterCollection = FirebaseFirestore.instance.collection(CAMPAIGN + rater.ratingCampaign + RATER);
 
-    await raterCollection.add(rater.toJson()).then((value) => rater.id = value.id);
+    //await raterCollection.add(rater.toJson()).then((value) => rater.id = value.id);
+    await raterCollection.doc(rater.id).set(rater.toJson());
 
     return newID;
-  }
-
-  @override
-  Future<void> addRaterToCampaign(Rater rater) async {
-    CollectionReference raterCollection;
-
-    raterCollection = FirebaseFirestore.instance.collection(CAMPAIGN + rater.ratingCampaign + RATINGS);
-
-    // add the rater to the current campaign and set the ratingID to the new document ID
-    await raterCollection.add({'id' : rater.id, 'name' : rater.name}).then((value) => rater.ratingID = value.id);
-    await updateRater(rater);  // write the rater to the DB
-
-    return;
   }
 
   @override
   Future<String> addRating(Rater rater, Rating rating) async {
     String newID = "";
-    CollectionReference raterCollection;
+    CollectionReference ratingCollection;
 
-    raterCollection = FirebaseFirestore.instance.collection(CAMPAIGN + rater.ratingCampaign + RATINGS);
+    ratingCollection = FirebaseFirestore.instance.collection(CAMPAIGN + rater.ratingCampaign + RATINGS);
 
     // add the rating to the subcollection of the rater to the current campaign
-    await raterCollection.doc(rater.ratingID).collection(RATER_RATINGS).add(rating.toJson()).then((value) => newID = value.id);
+    await ratingCollection.doc(rater.ratingID).collection(RATER_RATINGS).doc(rating.paradeNumberNumber.toString()).set(rating.toJson());
 
     return newID;
   }
+
+  /// CREATE
 
   /// DELETE
   @override
@@ -112,6 +101,19 @@ class FirebaseRepository implements RepositoryInterface {
     paradeNumberCollection = FirebaseFirestore.instance.collection(CAMPAIGN + campaignYear + PARADE_NUMBER);
 
     await paradeNumberCollection.doc(paradeNumber.id).delete();//.then((value) => print("Deleted"));
+  }
+
+  @override
+  Future<void> deleteRaters(String campaignYear, List<Rater> raters) async {
+    CollectionReference raterCollection;
+    CollectionReference ratingCollection;
+    raterCollection = FirebaseFirestore.instance.collection(CAMPAIGN + campaignYear + RATER);
+    ratingCollection = FirebaseFirestore.instance.collection(CAMPAIGN + campaignYear + RATINGS);
+
+    for(Rater rater in raters) {
+      await ratingCollection.doc(rater.ratingID).delete();
+      await raterCollection.doc(rater.id).delete();
+    }
   }
 
   /// GET
@@ -134,21 +136,40 @@ class FirebaseRepository implements RepositoryInterface {
   }
 
   @override
-  Future<Rater> getRater(String id) async {
+  Future<Rater> getRater(String id, String campaignYear) async {
     Rater rater;
     CollectionReference raterCollection;
 
-    raterCollection = FirebaseFirestore.instance.collection(RATER);
+    raterCollection = FirebaseFirestore.instance.collection(CAMPAIGN + campaignYear + RATER);
 
     DocumentSnapshot docSnapshot;
     docSnapshot = await raterCollection.doc(id).get();
     if(docSnapshot.data() != null) {
       rater = Rater.fromJson(docSnapshot.id, docSnapshot.data() as Map<String, dynamic>);
     } else {
-      rater = Rater("NEW", "", false, "", "", "", Rater.STATUS_NOT_REGISTERED, 0, Rater.RATING_METHOD_PICKER);
+      rater = Rater("NEW", "NEW", "", false, "", "", "", Rater.STATUS_NOT_REGISTERED, 0, Rater.RATING_METHOD_PICKER);
     }
 
     return rater;
+  }
+
+  @override
+  Future<List<Rater>> getAllRaters(String campaignYear) async {
+    CollectionReference raterCollection;
+    List<Rater> raters = [];
+
+    raterCollection = FirebaseFirestore.instance.collection(CAMPAIGN + campaignYear + RATER);
+
+    QuerySnapshot querySnapshotRater;
+    querySnapshotRater = await raterCollection.get();
+    for (var result in querySnapshotRater.docs) {
+      Map<String, dynamic> resRater = result.data() as Map<String, dynamic>;
+      Rater rater = Rater.fromJson(result.id, resRater);
+
+      raters.add(rater);
+    }
+
+    return raters;
   }
 
   @override
@@ -158,11 +179,11 @@ class FirebaseRepository implements RepositoryInterface {
 
     raterCollection = FirebaseFirestore.instance.collection(CAMPAIGN + rater.ratingCampaign + RATINGS);
 
-    // add the rating to the subcollection of the rater to the current campaign
+    // get the rating to the subcollection of the rater to the current campaign
     QuerySnapshot querySnapshot;
     querySnapshot = await raterCollection.doc(rater.ratingID).collection(RATER_RATINGS).get();
     for (var result in querySnapshot.docs) {
-      Rating rating = Rating.fromJson(result.id, result.data() as Map<String, dynamic>);
+      Rating rating = Rating.fromJson(int.parse(result.id), result.data() as Map<String, dynamic>);
       ratings.add(rating);
     }
 
@@ -170,15 +191,27 @@ class FirebaseRepository implements RepositoryInterface {
   }
 
   @override
-  Future<kgmw.Settings> getSettings() async {
-    CollectionReference settingsCollection;
+  Future<List<Rating>> getRatingsForCampaign(String currentCampaign) async {
+    List<Rating> ratings = [];
+    CollectionReference ratingsCollection;
 
-    settingsCollection = FirebaseFirestore.instance.collection(SETTINGS);
+    ratingsCollection = FirebaseFirestore.instance.collection(CAMPAIGN + currentCampaign + RATINGS);
+    // get all ratings for the current campaign
 
-    QuerySnapshot querySnapshot;
-    querySnapshot = await settingsCollection.get();
-    kgmw.Settings settings = kgmw.Settings.fromJson(querySnapshot.docs.first.id, querySnapshot.docs.first.data() as Map<String, dynamic>);
-    return settings;
+    // 1) get the raters
+    QuerySnapshot querySnapshotRater;
+    querySnapshotRater = await ratingsCollection.get();
+    for (var result in querySnapshotRater.docs) {
+      // 2) get the ratings for the rater
+      QuerySnapshot querySnapshot;
+      querySnapshot = await ratingsCollection.doc(result.id).collection(RATER_RATINGS).get();
+      for (var result1 in querySnapshot.docs) {
+        Rating rating = Rating.fromJson(int.parse(result1.id), result1.data() as Map<String, dynamic>);
+        ratings.add(rating);
+      }
+    }
+
+    return ratings;
   }
 
   @override
@@ -227,18 +260,9 @@ class FirebaseRepository implements RepositoryInterface {
     CollectionReference raterCollection;
 
     raterCollection = FirebaseFirestore.instance.collection(CAMPAIGN + rater.ratingCampaign + RATINGS);
-    raterCollection.doc(rater.ratingID).collection(RATER_RATINGS).doc(rating.id).update(rating.toJson());
+    raterCollection.doc(rater.ratingID).collection(RATER_RATINGS).doc(rating.paradeNumberNumber.toString()).update(rating.toJson());
 
     return;
-  }
-
-  @override
-  Future<void> updateSettings(kgmw.Settings settings) async {
-    CollectionReference settingsCollection;
-
-    settingsCollection = FirebaseFirestore.instance.collection(SETTINGS);
-
-    settingsCollection.doc(settings.id).update(settings.toJson());
   }
 
   @override
@@ -255,4 +279,25 @@ class FirebaseRepository implements RepositoryInterface {
   }
 
   /// listeners for realtime changes
+
+  /// tests
+  Future<void> test() async {
+    await FirebaseFirestore.instance
+        .collection(RATER)
+        .get()
+        .then((QuerySnapshot snapShot) async {
+      for (var element in snapShot.docs) {
+        await FirebaseFirestore.instance
+            .collection(CAMPAIGN + "2020_21_" + RATER)
+            .doc(element.id)
+            .set(element.data()as Map<String, dynamic>);
+      }
+    });
+  }
+/*  Future<void> test(List<ParadeNumber> paradeNumbers) async {
+    CollectionReference paradeNumberCollection;
+
+    paradeNumberCollection = FirebaseFirestore.instance.collection("TEST");
+    await paradeNumberCollection.add(paradeNumbers.asMap());//(jsonEncode(paradeNumbers));
+  }*/
 }
