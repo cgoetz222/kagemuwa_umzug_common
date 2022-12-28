@@ -50,16 +50,18 @@ class ParadeProvider extends ChangeNotifier {
   }
 
   void addCampaign(String newCampaignYear) {
-    Campaign newCampaign = Campaign('', newCampaignYear, true, true, Campaign.NUMBER_OF_RATERS, Campaign.WEIGHT_HUMOR, Campaign.WEIGHT_OPTIC_ORIGINALITY, Campaign.WEIGHT_DISTANCE_VOLUME);
+    Campaign newCampaign = Campaign('', newCampaignYear, false, false, Campaign.NUMBER_OF_RATERS, Campaign.WEIGHT_HUMOR, Campaign.WEIGHT_OPTIC_ORIGINALITY, Campaign.WEIGHT_DISTANCE_VOLUME);
 
     FirebaseRepository().addCampaign(newCampaign).then((value) => () {
       newCampaign.setID(value);
       campaigns?.add(newCampaign);
       campaignYears.add(newCampaign.year);
-      selectedCampaign = newCampaign;
+      //selectedCampaign = newCampaign;
     });
 
     _loadCampaigns();
+
+    notifyListeners();
   }
 
   void saveParadeNumbersToDB() async {
@@ -92,9 +94,15 @@ class ParadeProvider extends ChangeNotifier {
   }
 
   void deleteCurrentCampaign() async {
+    await FirebaseRepository().deleteRatersInCampaign(selectedCampaign.year);
+    await FirebaseRepository().deleteRatingsInCampaign(selectedCampaign.year);
+    await FirebaseRepository().deleteParadeNumbersInCampaign(selectedCampaign.year);
     await FirebaseRepository().deleteCampaign(selectedCampaign.id);
 
+    paradeNumbers = [];
     _loadCampaigns();
+
+    notifyListeners();
   }
 
   void deleteParadeNumber(int number) async {

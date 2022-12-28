@@ -21,6 +21,9 @@ abstract class RepositoryInterface {
   Future<void> deleteCampaign(String id);
   Future<void> deleteParadeNumber(String campaignYear, ParadeNumber paradeNumber);
   Future<void> deleteRaters(String campaignYear, List<Rater> raters);
+  Future<void> deleteRatersInCampaign(String campaignYear);
+  Future<void> deleteRatingsInCampaign(String campaignYear);
+  Future<void> deleteParadeNumbersInCampaign(String campaignYear);
 
   /// EXISTS
 //  Future<bool> checkUserExists(String uid);
@@ -28,6 +31,7 @@ abstract class RepositoryInterface {
   /// GET
   Future<List<Campaign>> getCampaigns();
   Future<Rater> getRater(String id, String campaignYear);
+  Future<Rater> getRaterByNumber(String number, String campaignYear);
   Future<List<Rater>> getAllRaters(String campaignYear);
   Future<List<Rating>> getRatings(Rater rater);
   Future<List<Rating>> getRatingsForCampaign(String currentCampaign);
@@ -35,7 +39,7 @@ abstract class RepositoryInterface {
 
   /// UPDATE
   Future<void> updateCampaign(Campaign campaign);
-  Future<void> updateRater(Rater rater);
+  Future<void> updateRater(Rater rater, String campaignYear);
   Future<void> updateRating(Rater rater, Rating rating);
   Future<void> updateParadeNumber(String campaignYear, ParadeNumber paradeNumber);
 }

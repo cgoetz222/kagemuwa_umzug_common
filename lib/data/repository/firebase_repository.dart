@@ -116,6 +116,58 @@ class FirebaseRepository implements RepositoryInterface {
     }
   }
 
+  @override
+  Future<void> deleteRatersInCampaign(String campaignYear) async {
+    final collection = await FirebaseFirestore.instance
+        .collection(CAMPAIGN + campaignYear + RATER)
+        .get();
+
+    final batch = FirebaseFirestore.instance.batch();
+
+    for (final doc in collection.docs) {
+      batch.delete(doc.reference);
+    }
+
+    await batch.commit();
+
+    return;
+  }
+
+  @override
+  Future<void> deleteRatingsInCampaign(String campaignYear) async {
+    final collection = await FirebaseFirestore.instance
+        .collection(CAMPAIGN + campaignYear + RATINGS)
+        .get();
+
+    final batch = FirebaseFirestore.instance.batch();
+
+    for (final doc in collection.docs) {
+      batch.delete(doc.reference);
+    }
+
+    await batch.commit();
+
+    return;
+  }
+
+  @override
+  Future<void> deleteParadeNumbersInCampaign(String campaignYear) async {
+    final collection = await FirebaseFirestore.instance
+        .collection(CAMPAIGN + campaignYear + PARADE_NUMBER)
+        .get();
+
+    final batch = FirebaseFirestore.instance.batch();
+
+    for (final doc in collection.docs) {
+      batch.delete(doc.reference);
+    }
+
+    await batch.commit();
+
+    return;
+  }
+
+
   /// GET
   @override
   Future<List<Campaign>> getCampaigns() async {
@@ -146,6 +198,28 @@ class FirebaseRepository implements RepositoryInterface {
     docSnapshot = await raterCollection.doc(id).get();
     if(docSnapshot.data() != null) {
       rater = Rater.fromJson(docSnapshot.id, docSnapshot.data() as Map<String, dynamic>);
+    } else {
+      rater = Rater("NEW", "NEW", "", false, "", "", "", Rater.STATUS_NOT_REGISTERED, 0, Rater.RATING_METHOD_PICKER);
+    }
+
+    return rater;
+  }
+
+  @override
+  Future<Rater> getRaterByNumber(String number, String campaignYear) async {
+    Rater rater;
+    rater = Rater("NEW", "NEW", "", false, "", "", "", Rater.STATUS_NOT_REGISTERED, 0, Rater.RATING_METHOD_PICKER);
+    CollectionReference raterCollection;
+
+    raterCollection = FirebaseFirestore.instance.collection(CAMPAIGN + campaignYear + RATER);
+
+    QuerySnapshot querySnapshot;
+    querySnapshot = await raterCollection.where("raterNumber", isEqualTo: number).get();
+    print(querySnapshot.toString());
+    if(querySnapshot.size > 0) {
+      for(var doc in querySnapshot.docs) {
+        rater = Rater.fromJson(doc.id, doc.data() as Map<String, dynamic>);
+      }
     } else {
       rater = Rater("NEW", "NEW", "", false, "", "", "", Rater.STATUS_NOT_REGISTERED, 0, Rater.RATING_METHOD_PICKER);
     }
@@ -245,10 +319,10 @@ class FirebaseRepository implements RepositoryInterface {
   }
 
   @override
-  Future<void> updateRater(Rater rater) async {
+  Future<void> updateRater(Rater rater, String campaignYear) async {
     CollectionReference raterCollection;
 
-    raterCollection = FirebaseFirestore.instance.collection(RATER);
+    raterCollection = FirebaseFirestore.instance.collection(CAMPAIGN + campaignYear + RATER);
 
     raterCollection.doc(rater.id).update(rater.toJson());
 
