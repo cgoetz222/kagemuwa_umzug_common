@@ -82,6 +82,18 @@ class FirebaseRepository implements RepositoryInterface {
     return newID;
   }
 
+  /// COUNT
+  @override
+  Future<int> getParadeNumbersCount(String campaignYear) async {
+    CollectionReference paradeNumberCollection;
+
+    paradeNumberCollection = FirebaseFirestore.instance.collection(CAMPAIGN + campaignYear + PARADE_NUMBER);
+
+    AggregateQuerySnapshot query = await paradeNumberCollection.count().get();
+
+    return query.count;
+  }
+
   /// CREATE
 
   /// DELETE

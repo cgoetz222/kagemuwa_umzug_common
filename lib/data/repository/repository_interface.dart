@@ -13,7 +13,7 @@ abstract class RepositoryInterface {
   Future<String> addRating(Rater rater, Rating rating);
 
   /// COUNT
-//  Future<List<int>> getExerciseCounts();
+  Future<int> getParadeNumbersCount(String campaignYear);
 
   /// CREATE
 
