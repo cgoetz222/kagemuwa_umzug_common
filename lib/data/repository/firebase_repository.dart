@@ -227,7 +227,6 @@ class FirebaseRepository implements RepositoryInterface {
 
     QuerySnapshot querySnapshot;
     querySnapshot = await raterCollection.where("raterNumber", isEqualTo: number).get();
-    print(querySnapshot.toString());
     if(querySnapshot.size > 0) {
       for(var doc in querySnapshot.docs) {
         rater = Rater.fromJson(doc.id, doc.data() as Map<String, dynamic>);

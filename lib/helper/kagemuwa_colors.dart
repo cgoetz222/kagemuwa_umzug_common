@@ -104,4 +104,7 @@ class KAGEMUWAColors {
   static const Color eyePupilColor11 = Color(0xFF000000);
   static const Color eyePupilSpotColor = Color(0xFFFFFFFF);
   static const Color eyebrowColor = Color(0xFF000000);
+
+  // menu
+  static const Color menuBackgroundColor = Color(0x7FFFFFFF);
 }
