@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kagemuwa_umzug_common/data/model/parade_number.dart';
 import 'package:kagemuwa_umzug_common/data/model/campaign.dart';
@@ -90,6 +91,8 @@ class FirebaseRepository implements RepositoryInterface {
     paradeNumberCollection = FirebaseFirestore.instance.collection(CAMPAIGN + campaignYear + PARADE_NUMBER);
 
     AggregateQuerySnapshot query = await paradeNumberCollection.count().get();
+
+    debugPrint("count: 1 read");
 
     return query.count;
   }
@@ -196,6 +199,8 @@ class FirebaseRepository implements RepositoryInterface {
       campaigns.add(campaign);
     }
 
+    debugPrint("get campaigns: ${querySnapshot.docs.length} reads");
+
     return campaigns;
   }
 
@@ -213,6 +218,8 @@ class FirebaseRepository implements RepositoryInterface {
     } else {
       rater = Rater("NEW", "NEW", "", false, "", "", "", Rater.STATUS_NOT_REGISTERED, 0, Rater.RATING_METHOD_PICKER);
     }
+
+    debugPrint("get rater by id: 1 read");
 
     return rater;
   }
@@ -235,6 +242,8 @@ class FirebaseRepository implements RepositoryInterface {
       rater = Rater("NEW", "NEW", "", false, "", "", "", Rater.STATUS_NOT_REGISTERED, 0, Rater.RATING_METHOD_PICKER);
     }
 
+    debugPrint("get rater by number: 1 read");
+
     return rater;
   }
 
@@ -245,14 +254,16 @@ class FirebaseRepository implements RepositoryInterface {
 
     raterCollection = FirebaseFirestore.instance.collection(CAMPAIGN + campaignYear + RATER);
 
-    QuerySnapshot querySnapshotRater;
-    querySnapshotRater = await raterCollection.get();
-    for (var result in querySnapshotRater.docs) {
+    QuerySnapshot querySnapshot;
+    querySnapshot = await raterCollection.get();
+    for (var result in querySnapshot.docs) {
       Map<String, dynamic> resRater = result.data() as Map<String, dynamic>;
       Rater rater = Rater.fromJson(result.id, resRater);
 
       raters.add(rater);
     }
+
+    debugPrint("get all raters: ${querySnapshot.docs.length} reads");
 
     return raters;
   }
@@ -272,6 +283,8 @@ class FirebaseRepository implements RepositoryInterface {
       ratings.add(rating);
     }
 
+    debugPrint("get all ratings for a rater: ${querySnapshot.docs.length} reads");
+
     return ratings;
   }
 
@@ -284,9 +297,9 @@ class FirebaseRepository implements RepositoryInterface {
     // get all ratings for the current campaign
 
     // 1) get the raters
-    QuerySnapshot querySnapshotRater;
-    querySnapshotRater = await ratingsCollection.get();
-    for (var result in querySnapshotRater.docs) {
+    QuerySnapshot querySnapshot;
+    querySnapshot = await ratingsCollection.get();
+    for (var result in querySnapshot.docs) {
       // 2) get the ratings for the rater
       QuerySnapshot querySnapshot;
       querySnapshot = await ratingsCollection.doc(result.id).collection(RATER_RATINGS).get();
@@ -295,6 +308,8 @@ class FirebaseRepository implements RepositoryInterface {
         ratings.add(rating);
       }
     }
+
+    debugPrint("get all ratings for a campaign: ${querySnapshot.docs.length} reads");
 
     return ratings;
   }
@@ -313,6 +328,8 @@ class FirebaseRepository implements RepositoryInterface {
       ParadeNumber paradeNumber = ParadeNumber.fromJson(result.id, result.data() as Map<String, dynamic>);
       paradeNumbers.add(paradeNumber);
     }
+
+    debugPrint("get all parade numbers: ${querySnapshot.docs.length} reads");
 
     return paradeNumbers;
   }
