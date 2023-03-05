@@ -290,6 +290,7 @@ class FirebaseRepository implements RepositoryInterface {
 
   @override
   Future<List<Rating>> getRatingsForCampaign(String currentCampaign) async {
+    List<Rater> raters = [];
     List<Rating> ratings = [];
     CollectionReference ratingsCollection;
 
@@ -297,7 +298,20 @@ class FirebaseRepository implements RepositoryInterface {
     // get all ratings for the current campaign
 
     // 1) get the raters
-    QuerySnapshot querySnapshot;
+    raters = await getAllRaters(currentCampaign);
+
+    for (Rater rater in raters) {
+      // 2) get the ratings for the rater
+      QuerySnapshot querySnapshot;
+      querySnapshot = await ratingsCollection.doc(rater.ratingID).collection(RATER_RATINGS).get();
+      debugPrint("get all ratings for a campaign: ${querySnapshot.docs.length} reads");
+      for (var result1 in querySnapshot.docs) {
+        Rating rating = Rating.fromJson(int.parse(result1.id), result1.data() as Map<String, dynamic>);
+        ratings.add(rating);
+      }
+    }
+
+/*    QuerySnapshot querySnapshot;
     querySnapshot = await ratingsCollection.get();
     for (var result in querySnapshot.docs) {
       // 2) get the ratings for the rater
@@ -307,9 +321,8 @@ class FirebaseRepository implements RepositoryInterface {
         Rating rating = Rating.fromJson(int.parse(result1.id), result1.data() as Map<String, dynamic>);
         ratings.add(rating);
       }
-    }
-
-    debugPrint("get all ratings for a campaign: ${querySnapshot.docs.length} reads");
+    }*/
+//    debugPrint("get all ratings for a campaign: ${querySnapshot.docs.length} reads");
 
     return ratings;
   }

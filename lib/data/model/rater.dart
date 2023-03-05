@@ -10,8 +10,8 @@ class Rater {
   static const int STATUS_ERROR_OTHER_DEVICE_ID = 98;
   static const int STATUS_ERROR = 99;
 
-  static const int RATING_METHOD_PICKER = 1;
-  static const int RATING_METHOD_SLIDER = 2;
+  static const int RATING_METHOD_PICKER = 2;
+  static const int RATING_METHOD_SLIDER = 1;
 
   String id;
   String raterNumber;
