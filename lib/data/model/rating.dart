@@ -1,10 +1,18 @@
+import 'package:kagemuwa_umzug_common/data/model/rating_sync_state.dart';
+
 class Rating implements Comparable<Rating> {
+//  static const int RATING_SAVED = 1;
+//  static const int RATING_NOT_SAVED = 0;
+
   int ratingOpticOriginality;
   int ratingHumor;
   int ratingDistanceVolume;
   int paradeNumberNumber;
+//  int statusSaved;
+  RatingSyncState syncState = RatingSyncState.idle;
 
-  Rating(this.paradeNumberNumber, this.ratingOpticOriginality, this.ratingHumor, this.ratingDistanceVolume);
+//  Rating(this.paradeNumberNumber, this.ratingOpticOriginality, this.ratingHumor, this.ratingDistanceVolume, this.statusSaved);
+  Rating(this.paradeNumberNumber, this.ratingOpticOriginality, this.ratingHumor, this.ratingDistanceVolume, this.syncState);
 
   factory Rating.fromJson(int id, Map<String, dynamic> jsonMap) {
     final int ratingOpticOriginality;
@@ -32,6 +40,8 @@ class Rating implements Comparable<Rating> {
       ratingOpticOriginality,
       ratingHumor,
       ratingDistanceVolume,
+      RatingSyncState.synced
+      //RATING_SAVED
     );
   }
 
@@ -44,5 +54,21 @@ class Rating implements Comparable<Rating> {
   @override
   int compareTo(Rating other) {
     return paradeNumberNumber.compareTo(other.paradeNumberNumber);
+  }
+
+/*  void setRatingUpdateFailed() {
+    statusSaved = RATING_NOT_SAVED;
+  }*/
+
+  void setRatingUpdatePending() {
+    syncState = RatingSyncState.localPending;
+  }
+
+  void setRatingUpdateCommitted() {
+    syncState = RatingSyncState.synced;
+  }
+
+  void setRatingUpdateFailed() {
+    syncState = RatingSyncState.failed;
   }
 }

@@ -93,7 +93,7 @@ class Rater {
       ratingID,
       status,
       currentParadeNumber,
-      ratingMethod,
+      ratingMethod
     );
   }
 

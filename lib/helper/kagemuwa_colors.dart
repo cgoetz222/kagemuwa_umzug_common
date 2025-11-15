@@ -46,6 +46,9 @@ class KAGEMUWAColors {
   static const Color cardBrightSubHeaderText = Color(0xFFFFFFFF);
   static const Color cardBrightBodyText = Color(0xFF444444);
   static const Color cardBrightLabelColor = Color(0xFF444444);
+  static const Color cardBrightBodyGreenText = Color(0xFF68904A);
+  static const Color cardBrightBodyOrangeText = Color(0xFFCE7C49);
+  static const Color cardBrightBodyRedText = Color(0xFFFF0000);
 
   // groups
   static const Color colorGrossgruppen = Color(0xFFB71C1C);

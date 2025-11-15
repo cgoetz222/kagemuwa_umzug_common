@@ -76,6 +76,21 @@ class KAGEMUWAStyles {
       color: KAGEMUWAColors.cardBrightBodyText,
       fontWeight: FontWeight.normal
   );
+  static const TextStyle cardBrightBodyGreenStyle = TextStyle(
+      fontSize: 14.0,
+      color: KAGEMUWAColors.cardBrightBodyGreenText,
+      fontWeight: FontWeight.normal
+  );
+  static const TextStyle cardBrightBodyOrangeStyle = TextStyle(
+      fontSize: 14.0,
+      color: KAGEMUWAColors.cardBrightBodyOrangeText,
+      fontWeight: FontWeight.normal
+  );
+  static const TextStyle cardBrightBodyRedStyle = TextStyle(
+      fontSize: 14.0,
+      color: KAGEMUWAColors.cardBrightBodyRedText,
+      fontWeight: FontWeight.normal
+  );
 
   // start screen
   static const TextStyle startPageTextFieldStyle = TextStyle(
@@ -99,5 +114,12 @@ class KAGEMUWAStyles {
       fontSize: 18.0,
       color: KAGEMUWAColors.ratingHeaderTextColor,
       fontWeight: FontWeight.bold
+  );
+
+  // elevated buttons
+  static ButtonStyle backendButtonStyle = ButtonStyle(
+    backgroundColor: MaterialStateProperty.all<Color>(KAGEMUWAColors.kagemuwaBackgroundColor), // set the background color
+    foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+    textStyle: MaterialStateProperty.all<TextStyle>(normalTextStyle),
   );
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kagemuwa_umzug_common/data/model/parade_number.dart';
@@ -94,7 +96,7 @@ class FirebaseRepository implements RepositoryInterface {
 
     debugPrint("count: 1 read");
 
-    return query.count;
+    return query.count!;
   }
 
   /// CREATE
@@ -371,14 +373,60 @@ class FirebaseRepository implements RepositoryInterface {
   }
 
   @override
+  Future<void> updateRating(Rater rater, Rating rating) {
+    final docRef = FirebaseFirestore.instance
+        .collection(CAMPAIGN + rater.ratingCampaign + RATINGS)
+        .doc(rater.ratingID)
+        .collection(RATER_RATINGS)
+        .doc(rating.paradeNumberNumber.toString());
+
+    // Status sofort setzen -> UI kann schon Spinner usw. anzeigen
+    rating.setRatingUpdatePending();
+
+    // Listener NUR für dieses Doc, inkl. Metadaten
+    late final StreamSubscription sub;
+    sub = docRef
+        .snapshots(includeMetadataChanges: true)
+        .listen((snapshot) {
+      final pending = snapshot.metadata.hasPendingWrites;
+
+      if (!pending) {
+        // Alle Writes für dieses Doc sind auf dem Server angekommen
+        debugPrint("Rating-Update mit Server synchron.");
+        rating.setRatingUpdateCommitted();
+        sub.cancel(); // wichtig: aufräumen
+      }
+    });
+
+    // Schreiboperation starten: das ist der Future, den wir zurückgeben
+    return docRef.update(rating.toJson()).then((_) {
+      debugPrint("rating lokal/offline gespeichert, Sync läuft ggf. noch...");
+    }).catchError((e) {
+      debugPrint("Fehler update: $e");
+      rating.setRatingUpdateFailed();
+      sub.cancel();
+      // Fehler weiterwerfen, damit der Caller reagieren kann (SnackBar, Dialog etc.)
+      throw e;
+    });
+  }
+
+/*  @override
   Future<void> updateRating(Rater rater, Rating rating) async {
     CollectionReference raterCollection;
 
     raterCollection = FirebaseFirestore.instance.collection(CAMPAIGN + rater.ratingCampaign + RATINGS);
-    raterCollection.doc(rater.ratingID).collection(RATER_RATINGS).doc(rating.paradeNumberNumber.toString()).update(rating.toJson());
+    //raterCollection.doc(rater.ratingID).collection(RATER_RATINGS).doc(rating.paradeNumberNumber.toString()).update(rating.toJson());
+    raterCollection.doc(rater.ratingID).collection(RATER_RATINGS).doc(rating.paradeNumberNumber.toString()).update(rating.toJson()).then(
+            (value) => print("rating updated"),
+        onError: (e) {
+          debugPrint("Fehler update: $e");
+          rating.setRatingUpdateFailed();
+        }
+      //onError: (e) => (rating.setRatingUpdateFailed())
+    );
 
     return;
-  }
+  }*/
 
   @override
   Future<void> updateParadeNumber(String campaignYear, ParadeNumber paradeNumber) async {
