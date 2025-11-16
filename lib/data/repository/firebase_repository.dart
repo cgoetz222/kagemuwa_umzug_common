@@ -380,8 +380,10 @@ class FirebaseRepository implements RepositoryInterface {
         .collection(RATER_RATINGS)
         .doc(rating.paradeNumberNumber.toString());
 
-    // Status sofort setzen -> UI kann schon Spinner usw. anzeigen
+    // Lokaler Status: „es gibt eine Änderung, die synchronisiert werden soll“
     rating.setRatingUpdatePending();
+
+    bool sawPendingWrite = false;
 
     // Listener NUR für dieses Doc, inkl. Metadaten
     late final StreamSubscription sub;
@@ -390,7 +392,14 @@ class FirebaseRepository implements RepositoryInterface {
         .listen((snapshot) {
       final pending = snapshot.metadata.hasPendingWrites;
 
-      if (!pending) {
+      if (pending) {
+        // Wir haben mindestens einmal einen lokalen Write gesehen
+        sawPendingWrite = true;
+        // rating bleibt auf localPending – das hast du ja schon gesetzt
+        return;
+      }
+
+      if (sawPendingWrite) {
         // Alle Writes für dieses Doc sind auf dem Server angekommen
         debugPrint("Rating-Update mit Server synchron.");
         rating.setRatingUpdateCommitted();
@@ -404,9 +413,9 @@ class FirebaseRepository implements RepositoryInterface {
     }).catchError((e) {
       debugPrint("Fehler update: $e");
       rating.setRatingUpdateFailed();
-      sub.cancel();
+      sub.cancel(); // wichtig: aufräumen
       // Fehler weiterwerfen, damit der Caller reagieren kann (SnackBar, Dialog etc.)
-      throw e;
+      //throw e;
     });
   }
 

@@ -1,4 +1,5 @@
 import 'package:kagemuwa_umzug_common/data/model/rating_sync_state.dart';
+import 'package:flutter/material.dart';
 
 class Rating implements Comparable<Rating> {
 //  static const int RATING_SAVED = 1;
@@ -62,13 +63,16 @@ class Rating implements Comparable<Rating> {
 
   void setRatingUpdatePending() {
     syncState = RatingSyncState.localPending;
+    debugPrint("Status for $paradeNumberNumber set is pending: $syncState");
   }
 
   void setRatingUpdateCommitted() {
     syncState = RatingSyncState.synced;
+    debugPrint("Status for $paradeNumberNumber set is committed: $syncState");
   }
 
   void setRatingUpdateFailed() {
     syncState = RatingSyncState.failed;
+    debugPrint("Status for $paradeNumberNumber set is error: $syncState");
   }
 }
